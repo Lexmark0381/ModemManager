@@ -15,12 +15,23 @@ while True:
 	request = client_connection.recv(1024).decode("utf-8") 
 	request = request.split('\r\n')
 	# print(request)
-	method = request[0].split(' ')[0]
-	dir = request[0].split(' ')[1]
+	method = request[0].split()[0]
+	dir = request[0].split()[1]
 	print(method, dir)
 	# print(request)
 	if(method == "GET"):
-		if(dir == "/js.js"):
+
+		if(dir == "/"):
+			http_response = "HTTP\/1.1 200 OK\n\n"
+			f = open("index.html", "r")
+			text = f.read()
+			f.close()
+			http_response += text
+			http_response += "\n"
+			client_connection.sendall(http_response.encode())
+			client_connection.close()
+
+		elif(dir == "/js.js"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
 			f = open("js.js", "r")
 			text = f.read()
@@ -28,6 +39,7 @@ while True:
 			http_response += text + "\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
+
 
 		elif(dir == "/style.css"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
@@ -39,21 +51,11 @@ while True:
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
 
-		elif(dir == "/"):
-			http_response = "HTTP\/1.1 200 OK\n\n"
-			f = open("index.html", "r")
-			text = f.read()
-			f.close()
-			http_response += text
-			http_response += "\n"
-			client_connection.sendall(http_response.encode())
-			client_connection.close()
-
 		elif(dir == "/ping"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
 			delay = ping.verbose_ping("192.168.0.1", 250, 2)
 			http_response += str(int(delay))
-			http_response += "\n"
+			# http_response += "\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
 
@@ -68,10 +70,12 @@ while True:
 			http_response = "HTTP\/1.1 404 NotFound\n\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
+
 	elif(method == "POST"):
+
 		if(dir[0: 4] == "/log"):
-			log += dir.split("=")[1].replace("%20", " ")
-			log += "<br>"
-			print(log)
-			print("log")
+			log += dir.split("=")[1].replace("%20", " ").replace("%3C", "<").replace("%3E", ">")
+			http_response = "HTTP\/1.1 200 OK\n\n"
+			client_connection.sendall(http_response.encode())
+			client_connection.close()
 

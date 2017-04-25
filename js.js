@@ -1,5 +1,4 @@
 var termText = "";
-var termTextBREnding = true;
 var modemState = null;
 update = function(){
 	var objDiv = document.getElementById("term");
@@ -11,20 +10,21 @@ update = function(){
 
 print = function(str){
 	date = new Date().toLocaleString();
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open( "POST", "http://localhost:8888/log&log=" + str, false ); // false for synchronous request
+	xmlHttp.send( null );
+
 	termText = termText + str;
-	termTextBREnding = false;
 	update();
 }
 
 println = function(str){
 	date = new Date().toLocaleString();
-	if(termTextBREnding){
-		termText =  termText + date + " " + str + "<br>";	
-		termTextBREnding = true;
-	} else {
-		termText =  termText + date + " " + str + "<br>";	
-		termTextBREnding = true;
-	}
+	var xmlHttp = new XMLHttpRequest();
+	newline = date + " " + str + "<br>";
+	xmlHttp.open( "POST", "http://localhost:8888/log&log=" + newline, false ); // false for synchronous request
+	xmlHttp.send( null );
+	termText =  termText + newline	
 	update();
 }
 
@@ -35,9 +35,7 @@ on = function(){
 	} else {
 		println("[INFO] Powering on modem");
 		stateSetter("on");
-		var xmlHttp = new XMLHttpRequest();
-    	xmlHttp.open( "POST", "http://localhost:8888/log&log=[INFO] Powering on modem", true ); // false for synchronous request
-		xmlHttp.send( null );
+		
 	}
 	
 }
@@ -49,9 +47,7 @@ off = function(){
 	} else {
 		println("[INFO] Powering off modem");
 		stateSetter("off");
-		var xmlHttp = new XMLHttpRequest();
-    	xmlHttp.open( "POST", "http://localhost:8888/log&log=[INFO] Powering off modem", true ); // false for synchronous request
-		xmlHttp.send( null );
+		
 	}
 }
 
@@ -62,9 +58,6 @@ reboot = function(){
 	} else {
 		println("[INFO] Rebooting modem");
 		stateSetter("reboot");
-		var xmlHttp = new XMLHttpRequest();
-    	xmlHttp.open( "POST", "http://localhost:8888/log&log=[INFO] Rebooting modem", true ); // false for synchronous request
-		xmlHttp.send( null );
 	}
 }
 
@@ -78,23 +71,24 @@ boot = function(){
 	document.getElementById("off").onclick = off;
 	document.getElementById("reboot").onclick = reboot;
 	document.getElementById("ping").onclick = ping;
-	// update();
+	update();
 	
 
 
 }
 
 ping = function(){
-		print("[PING] ")
+		date = new Date().toLocaleString();
+
+		print(date + " [PING] ")
 	    var xmlHttp = new XMLHttpRequest();
 	    xmlHttp.open( "GET", "http://localhost:8888/ping", false ); // false for synchronous request
     	xmlHttp.send( null );
-    	
     	if((xmlHttp.responseText > 1000) || (xmlHttp.responseText === -1)){
-    		println("[ERR] Delay too high.")
-    		reboot()
+    		println("[ERR] Delay too high. Reboot may be needed.")
     	} else {
-    		println(xmlHttp.responseText + "ms");
+    		latency = xmlHttp.responseText + "ms"
+    		println(latency);
     	}
 }
 
