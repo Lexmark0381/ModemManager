@@ -9,31 +9,35 @@ update = function(){
 }
 
 print = function(str){
-	date = new Date().toLocaleString();
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.open( "POST", "http://localhost:8888/log&log=" + str, false ); // false for synchronous request
 	xmlHttp.send( null );
-
 	termText = termText + str;
 	update();
 }
 
 println = function(str){
-	date = new Date().toLocaleString();
 	var xmlHttp = new XMLHttpRequest();
-	newline = date + " " + str + "<br>";
+	newline = str + "<br>";
 	xmlHttp.open( "POST", "http://localhost:8888/log&log=" + newline, false ); // false for synchronous request
 	xmlHttp.send( null );
 	termText =  termText + newline	
 	update();
 }
 
+printDate = function(){
+	date = new Date().toLocaleString() + " ";
+	print(date)
+}
+
 on = function(){
 	if(modemState === "on"){
-		println("[INFO] Modem is on");
+		printDate();
+		println(" [INFO] Modem is on");
 		return;
 	} else {
-		println("[INFO] Powering on modem");
+		printDate();
+		println(" [INFO] Powering on modem");
 		stateSetter("on");
 		
 	}
@@ -42,10 +46,12 @@ on = function(){
 
 off = function(){
 	if(modemState === "off"){
-		println("[INFO] Modem is off");
+		printDate();
+		println(" [INFO] Modem is off");
 		return;
 	} else {
-		println("[INFO] Powering off modem");
+		printDate();
+		println(" [INFO] Powering off modem");
 		stateSetter("off");
 		
 	}
@@ -53,10 +59,12 @@ off = function(){
 
 reboot = function(){
 	if(modemState === "reboot"){
-		println("[INFO] Modem is rebooting");
+		printDate();
+		println(" [INFO] Modem is rebooting");
 		return;
 	} else {
-		println("[INFO] Rebooting modem");
+		printDate();
+		println(" [INFO] Rebooting modem");
 		stateSetter("reboot");
 	}
 }
@@ -71,24 +79,27 @@ boot = function(){
 	document.getElementById("off").onclick = off;
 	document.getElementById("reboot").onclick = reboot;
 	document.getElementById("ping").onclick = ping;
+	if(modemState === null){
+		// Check modem online
+		ping()
+	}
 	update();
-	
-
-
 }
 
 ping = function(){
-		date = new Date().toLocaleString();
-
-		print(date + " [PING] ")
+		printDate();
+		print(" [PING] ")
 	    var xmlHttp = new XMLHttpRequest();
 	    xmlHttp.open( "GET", "http://localhost:8888/ping", false ); // false for synchronous request
     	xmlHttp.send( null );
-    	if((xmlHttp.responseText > 1000) || (xmlHttp.responseText === -1)){
-    		println("[ERR] Delay too high. Reboot may be needed.")
+    	avgPing = parseInt(xmlHttp.responseText)
+    	if((avgPing > 1000) || (avgPing === -1)){
+    		console.log(avgPing)
+    		println(" Delay too high. Reboot may be needed.")
     	} else {
-    		latency = xmlHttp.responseText + "ms"
+    		latency = avgPing + " ms"
     		println(latency);
+    		stateSetter("on");
     	}
 }
 
@@ -96,6 +107,9 @@ stateSetter = function(str){
 	if((str !== "on") || (str !== "off") || ((str !== "reboot"))){
 		return;
 	} else {
+	    var xmlHttp = new XMLHttpRequest();
+	    xmlHttp.open( "POST", "http://localhost:8888/state&state=" + str, true ); // false for synchronous request
+    	xmlHttp.send( null );
 		modemState = str;
 	}
 }
