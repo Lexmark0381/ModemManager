@@ -1,4 +1,4 @@
-import socket, ping as ping
+import socket, ping as ping, gpio as gpio
 log = ""
 HOST, PORT = '', 8888
 
@@ -111,6 +111,17 @@ while True:
 			received_state = dir.split("=")[1]
 			print(received_state)
 			if((received_state == "on") or (received_state == "off") or (received_state == "reboot")):
+				if(received_state == "on"):
+					gpio.on()
+				elif (received_state == "off"):
+					gpio.off()
+				else:
+					try:
+                                		t = int(dir.split("=")[2])
+                        		except:
+                                		print("No timeout given, setting to 3")
+						t = 3
+					gpio.reboot(t)
 				modem_state = received_state
 				http_response = "HTTP\/1.1 200 OK\n\n"
 				client_connection.sendall(http_response.encode())
