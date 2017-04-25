@@ -28,7 +28,7 @@ while True:
 			http_response += "\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
-		elif(dir == " /img/grey.png"):
+		elif(dir == "/img/grey.png"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
 			f = open("/img/grey.png", "r")
 			text = f.read()
@@ -36,7 +36,7 @@ while True:
 			http_response += text + "\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
-		elif(dir == " /img/red.png"):
+		elif(dir == "/img/red.png"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
 			f = open("/img/red.png", "r")
 			text = f.read()
@@ -44,7 +44,7 @@ while True:
 			http_response += text + "\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
-		elif(dir == " /img/green.png"):
+		elif(dir == "/img/green.png"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
 			f = open("/img/green.png", "r")
 			text = f.read()
@@ -63,7 +63,7 @@ while True:
 			client_connection.close()
 
 		elif(dir == "/style.css"):
-			http_response = "HTTP\/1.1 200 OK\nContent-Type: text/css\n"
+			http_response = "HTTP\/1.1 200 OK\n\n"
 			f = open("style.css", "r")
 			text = f.read()
 			f.close()
