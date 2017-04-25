@@ -1,5 +1,38 @@
 var termText = "";
-var modemState = null;
+var modemState = "on";
+var switchOnButton = document.getElementById("on");
+var switchOffButton = document.getElementById("off");
+var rebootButton = document.getElementById("reboot");
+var timeout;
+stateSetter = function(str){
+	// console.log(modemState, str)
+	if((str === "on") || (str === "off") || (str === "reboot")){
+		// console.log("Editing state: " + str);
+	    var xmlHttp = new XMLHttpRequest();
+	    var route = "http://192.168.0.2:8888/state&state=" + str
+	    // console.log(route)
+	    xmlHttp.open( "POST", route, true ); // false for synchronous request
+    	xmlHttp.send( null );
+		modemState = str;
+		if (str === "reboot"){
+			createCountdown(30);
+		}
+	}
+}
+
+function createCountdown(count){
+	// console.log(count)
+    counter = count ? count : null;
+    document.getElementById("reboot").innerHTML = "Reboot (" + counter + ")"
+    if(count--){
+        timeout  = setTimeout(function(){createCountdown(counter-1);}, 1000);
+    } else {
+		document.getElementById("reboot").innerHTML = "Reboot";
+		stateSetter("on")
+
+    }
+}
+
 update = function(){
 	var objDiv = document.getElementById("term");
 	// console.log(objDiv.scrollTop, objDiv.scrollHeight)
@@ -39,7 +72,10 @@ on = function(){
 		printDate();
 		println(" [INFO] Powering on modem");
 		stateSetter("on");
-		
+		on()
+		document.getElementById("reboot").innerHTML = "Reboot";
+		clearTimeout(timeout)
+
 	}
 	
 }
@@ -53,7 +89,10 @@ off = function(){
 		printDate();
 		println(" [INFO] Powering off modem");
 		stateSetter("off");
-		
+		off()
+		document.getElementById("reboot").innerHTML = "Reboot";
+		clearTimeout(timeout)
+
 	}
 }
 
@@ -66,6 +105,7 @@ reboot = function(){
 		printDate();
 		println(" [INFO] Rebooting modem");
 		stateSetter("reboot");
+		reboot()
 	}
 }
 
@@ -79,10 +119,6 @@ boot = function(){
 	document.getElementById("off").onclick = off;
 	document.getElementById("reboot").onclick = reboot;
 	document.getElementById("ping").onclick = ping;
-	if(modemState === null){
-		// Check modem online
-		ping()
-	}
 	update();
 }
 
@@ -94,7 +130,7 @@ ping = function(){
     	xmlHttp.send( null );
     	avgPing = parseInt(xmlHttp.responseText)
     	if((avgPing > 1000) || (avgPing === -1)){
-    		console.log(avgPing)
+    		// console.log(avgPing)
     		println(" Delay too high. Reboot may be needed.")
     	} else {
     		latency = avgPing + " ms"
@@ -103,13 +139,4 @@ ping = function(){
     	}
 }
 
-stateSetter = function(str){
-	if((str !== "on") || (str !== "off") || ((str !== "reboot"))){
-		return;
-	} else {
-	    var xmlHttp = new XMLHttpRequest();
-	    xmlHttp.open( "POST", "http://192.168.0.2:8888/state&state=" + str, true ); // false for synchronous request
-    	xmlHttp.send( null );
-		modemState = str;
-	}
-}
+
