@@ -117,9 +117,9 @@ while True:
 					gpio.off()
 				else:
 					try:
-                                		t = int(dir.split("=")[2])
-                        		except:
-                                		print("No timeout given, setting to 3")
+						t = int(dir.split("=")[2])
+					except:
+						print("No timeout given, setting to 3")
 						t = 3
 					gpio.reboot(t)
 				modem_state = received_state
