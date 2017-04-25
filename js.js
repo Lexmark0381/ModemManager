@@ -10,7 +10,7 @@ update = function(){
 
 print = function(str){
 	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open( "POST", "http://localhost:8888/log&log=" + str, false ); // false for synchronous request
+	xmlHttp.open( "POST", "http://raspberrypi:8888/log&log=" + str, false ); // false for synchronous request
 	xmlHttp.send( null );
 	termText = termText + str;
 	update();
@@ -19,7 +19,7 @@ print = function(str){
 println = function(str){
 	var xmlHttp = new XMLHttpRequest();
 	newline = str + "<br>";
-	xmlHttp.open( "POST", "http://localhost:8888/log&log=" + newline, false ); // false for synchronous request
+	xmlHttp.open( "POST", "http://raspberrypi:8888/log&log=" + newline, false ); // false for synchronous request
 	xmlHttp.send( null );
 	termText =  termText + newline	
 	update();
@@ -71,7 +71,7 @@ reboot = function(){
 
 boot = function(){
 	var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", "http://localhost:8888/log", false ); // false for synchronous request
+    xmlHttp.open( "GET", "http://raspberrypi:8888/log", false ); // false for synchronous request
 	xmlHttp.send( null );
 	termText = xmlHttp.responseText;
 	document.getElementById("term").innerHTML = termText;
@@ -90,7 +90,7 @@ ping = function(){
 		printDate();
 		print(" [PING] ")
 	    var xmlHttp = new XMLHttpRequest();
-	    xmlHttp.open( "GET", "http://localhost:8888/ping", false ); // false for synchronous request
+	    xmlHttp.open( "GET", "http://raspberrypi:8888/ping", false ); // false for synchronous request
     	xmlHttp.send( null );
     	avgPing = parseInt(xmlHttp.responseText)
     	if((avgPing > 1000) || (avgPing === -1)){
@@ -108,7 +108,7 @@ stateSetter = function(str){
 		return;
 	} else {
 	    var xmlHttp = new XMLHttpRequest();
-	    xmlHttp.open( "POST", "http://localhost:8888/state&state=" + str, true ); // false for synchronous request
+	    xmlHttp.open( "POST", "http://raspberrypi:8888/state&state=" + str, true ); // false for synchronous request
     	xmlHttp.send( null );
 		modemState = str;
 	}

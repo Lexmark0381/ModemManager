@@ -28,6 +28,7 @@ while True:
 			http_response += "\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
+
 		elif(dir == "/img/grey.png"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
 			f = open("/img/grey.png", "r")
@@ -36,6 +37,7 @@ while True:
 			http_response += text + "\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
+
 		elif(dir == "/img/red.png"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
 			f = open("/img/red.png", "r")
@@ -44,6 +46,7 @@ while True:
 			http_response += text + "\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
+			
 		elif(dir == "/img/green.png"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
 			f = open("/img/green.png", "r")
@@ -74,9 +77,9 @@ while True:
 
 		elif(dir == "/ping"):
 			http_response = "HTTP\/1.1 200 OK\n\n"
-			# delay = ping.verbose_ping("192.168.0.1", 250, 2)
+			delay = ping.verbose_ping("192.168.0.1", 250, 2)
 			# only for testing
-			delay = ping.verbose_ping("localhost", 250, 2)
+			# delay = ping.verbose_ping("localhost", 250, 2)
 			http_response += str(int(delay))
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
