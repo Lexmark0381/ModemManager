@@ -4,24 +4,51 @@ var switchOnButton = document.getElementById("on");
 var switchOffButton = document.getElementById("off");
 var rebootButton = document.getElementById("reboot");
 var timeout;
+var host = "localhost"
+
+changeFavicon = function(dir){
+	document.head = document.head || document.getElementsByTagName('head')[0];
+	console.log(document.head)
+	var link = document.createElement('link'), oldLink = document.getElementById('favicon');
+ 	link.id = 'favicon';
+ 	link.rel = 'shortcut icon';
+ 	link.type = "image/png";
+ 	link.href = dir;
+ 	if (oldLink) {
+ 		console.log(oldLink)
+  		document.head.removeChild(oldLink);
+ 	}
+ 	console.log(link)
+ 	document.head.appendChild(link);
+}
+
+
 stateSetter = function(str){
-	// console.log(modemState, str)
 	if((str === "on") || (str === "off") || (str === "reboot")){
-		// console.log("Editing state: " + str);
 	    var xmlHttp = new XMLHttpRequest();
-	    var route = "http://192.168.0.2:8888/state&state=" + str
-	    // console.log(route)
-	    xmlHttp.open( "POST", route, true ); // false for synchronous request
+	    var route = "http://" + host + ":8888/state&state=" + str
+	    xmlHttp.open( "POST", route, true );
     	xmlHttp.send( null );
+
 		modemState = str;
+
+		if(str === "on"){
+			changeFavicon("/img/greenn.png");
+			return;
+		}
+		if(str === "off"){
+			changeFavicon("/img/red.png")
+			return;
+		}
 		if (str === "reboot"){
+			changeFavicon("/img/grey.png")
 			createCountdown(30);
+			return;
 		}
 	}
 }
 
-function createCountdown(count){
-	// console.log(count)
+createCountdown = function(count){
     counter = count ? count : null;
     document.getElementById("reboot").innerHTML = "Reboot (" + counter + ")"
     if(count--){
@@ -29,13 +56,11 @@ function createCountdown(count){
     } else {
 		document.getElementById("reboot").innerHTML = "Reboot";
 		stateSetter("on")
-
     }
 }
 
 update = function(){
 	var objDiv = document.getElementById("term");
-	// console.log(objDiv.scrollTop, objDiv.scrollHeight)
 	document.getElementById("term").innerHTML = termText;
 	objDiv.scrollTop = objDiv.scrollHeight;	
 
@@ -43,7 +68,7 @@ update = function(){
 
 print = function(str){
 	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open( "POST", "http://192.168.0.2:8888/log&log=" + str, false ); // false for synchronous request
+	xmlHttp.open( "POST", "http://" + host + ":8888/log&log=" + str, false ); // false for synchronous request
 	xmlHttp.send( null );
 	termText = termText + str;
 	update();
@@ -52,7 +77,7 @@ print = function(str){
 println = function(str){
 	var xmlHttp = new XMLHttpRequest();
 	newline = str + "<br>";
-	xmlHttp.open( "POST", "http://192.168.0.2:8888/log&log=" + newline, false ); // false for synchronous request
+	xmlHttp.open( "POST", "http://" + host + ":8888/log&log=" + newline, false ); // false for synchronous request
 	xmlHttp.send( null );
 	termText =  termText + newline	
 	update();
@@ -64,15 +89,13 @@ printDate = function(){
 }
 
 on = function(){
+	printDate();
 	if(modemState === "on"){
-		printDate();
 		println(" [INFO] Modem is on");
 		return;
 	} else {
-		printDate();
 		println(" [INFO] Powering on modem");
 		stateSetter("on");
-		on()
 		document.getElementById("reboot").innerHTML = "Reboot";
 		clearTimeout(timeout)
 
@@ -89,10 +112,8 @@ off = function(){
 		printDate();
 		println(" [INFO] Powering off modem");
 		stateSetter("off");
-		off()
 		document.getElementById("reboot").innerHTML = "Reboot";
 		clearTimeout(timeout)
-
 	}
 }
 
@@ -105,13 +126,12 @@ reboot = function(){
 		printDate();
 		println(" [INFO] Rebooting modem");
 		stateSetter("reboot");
-		reboot()
 	}
 }
 
 boot = function(){
 	var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", "http://192.168.0.2:8888/log", false ); // false for synchronous request
+    xmlHttp.open( "GET", "http://" + host + ":8888/log", false ); // false for synchronous request
 	xmlHttp.send( null );
 	termText = xmlHttp.responseText;
 	document.getElementById("term").innerHTML = termText;
@@ -119,18 +139,36 @@ boot = function(){
 	document.getElementById("off").onclick = off;
 	document.getElementById("reboot").onclick = reboot;
 	document.getElementById("ping").onclick = ping;
+	document.getElementById("autoreboot").onclick = autoreboot;
 	update();
+	detect();
+}
+
+detect = function(){
+	var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", "http://" + host + ":8888/ping", false );
+	xmlHttp.send( null );
+	avgPing = parseInt(xmlHttp.responseText)
+	console.log(avgPing)
+	if (avgPing > 0){
+		modemState = "on";
+		stateSetter("on");
+		on();
+	} else {
+		modemState = "off";
+		stateSetter("off");
+		off();
+	}
 }
 
 ping = function(){
 		printDate();
 		print(" [PING] ")
 	    var xmlHttp = new XMLHttpRequest();
-	    xmlHttp.open( "GET", "http://192.168.0.2:8888/ping", false ); // false for synchronous request
+	    xmlHttp.open( "GET", "http://" + host + ":8888/ping", false );
     	xmlHttp.send( null );
     	avgPing = parseInt(xmlHttp.responseText)
     	if((avgPing > 1000) || (avgPing === -1)){
-    		// console.log(avgPing)
     		println(" Delay too high. Reboot may be needed.")
     	} else {
     		latency = avgPing + " ms"
@@ -138,5 +176,3 @@ ping = function(){
     		stateSetter("on");
     	}
 }
-
-

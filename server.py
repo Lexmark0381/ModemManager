@@ -1,4 +1,14 @@
-import socket, ping as ping, gpio as gpio
+import socket, ping as ping, sys, time
+NOGPIOMODE = False
+AUTOREBOOT = True
+try:
+	if("--nogpio" in sys.argv):
+		print("NO GPIO MODE")
+		NOGPIOMODE = True
+except:
+	import gpio as gpio
+	print("GPIO imported")
+
 log = ""
 HOST, PORT = '', 8888
 
@@ -12,11 +22,17 @@ modem_state = "on"
 
 while True:
 	client_connection, client_address = listen_socket.accept()
-	print(client_connection, client_address)
+	# print(client_connection, client_address)
 	request = client_connection.recv(1024).decode("utf-8") 
 	request = request.split('\r\n')
-	method = request[0].split()[0]
-	dir = request[0].split()[1]
+	try:
+		method = request[0].split()[0]
+		dir = request[0].split()[1]
+	except IndexError:
+		print("Couldn't retreive method or directory")
+		print(request)
+
+		break;
 	print(method, dir)
 	if(method == "GET"):
 		if(dir == "/"):
@@ -30,43 +46,32 @@ while True:
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
 
+		elif(dir == "/img/grey.png"):
+			print("GET "+ dir)
+			print("200 OK")
+			f = open("img/grey.png", "rb")
+			client_connection.send("HTTP\/1.1 200 OK\nContent-Type : image/png\n\n".encode())
+			client_connection.send(f.read())
+			client_connection.close()
+			f.close()
 
+		elif(dir == "/img/greenn.png"):
+			print("GET "+ dir)
+			print("200 OK")
+			f = open("img/greenn.png", "rb")
+			client_connection.send("HTTP\/1.1 200 OK\nContent-Type : image/png\n\n".encode())
+			client_connection.send(f.read())
+			client_connection.close()
+			f.close()
 
-
-
-		# elif(dir == "/img/grey.png"):
-		# 	my_bytes = bytearray()
-		# 	print("200 OK")
-		# 	f = open("img/grey.png", "rb")
-		# 	my_bytes.append(f.read())
-		# 	print(my_bytes)
-		# 	f.close()
-		# 	client_connection.send(my_bytes)
-		# 	client_connection.close()
-
-		# elif(dir == "/img/red.png"):
-		# 	my_bytes = bytearray()
-		# 	print("200 OK")
-		# 	f = open("img/red.png", "rb")
-		# 	my_bytes.append(f.read())
-		# 	print(my_bytes)
-		# 	f.close()
-		# 	client_connection.send(my_bytes)
-		# 	client_connection.close()
-
-		# elif(dir == "/img/green.png"):
-		# 	my_bytes = bytearray()
-		# 	print("200 OK")
-		# 	f = open("img/green.png", "rb")
-		# 	my_bytes.append(f.read())
-		# 	print(my_bytes)
-		# 	f.close()
-		# 	client_connection.send(my_bytes)
-		# 	client_connection.close()
-
-
-
-
+		elif(dir == "/img/red.png"):
+			print("GET "+ dir)
+			print("200 OK")
+			f = open("img/red.png", "rb")
+			client_connection.send("HTTP\/1.1 200 OK\nContent-Type : image/png\n\n".encode())
+			client_connection.send(f.read())
+			client_connection.close()
+			f.close()
 
 		elif(dir == "/js.js"):
 			print("200 OK")
@@ -80,7 +85,7 @@ while True:
 
 		elif(dir == "/style.css"):
 			print("200 OK")
-			http_response = "HTTP\/1.1 200 OK\n\n"
+			http_response = "HTTP\/1.1 200 OK\nContent-Type : text/css\n\n"
 			f = open("style.css", "r")
 			text = f.read()
 			f.close()
@@ -92,18 +97,26 @@ while True:
 		elif(dir == "/ping"):
 			print("200 OK")
 			http_response = "HTTP\/1.1 200 OK\n\n"
-			delay = ping.verbose_ping("192.168.0.1", 250, 2)
+			delay = ping.verbose_ping("192.168.0.1", 250, 1)
+			# print(delay)
 			# only for testing
 			# delay = ping.verbose_ping("localhost", 250, 2)
 			http_response += str(int(delay))
+			# http_response += "500ms"
+			# client_connection.sendall(http_response.encode())
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
 
 		elif(dir == "/log"):
-			print("200 OK")
-			http_response = "HTTP\/1.1 200 OK\n\n"
-			http_response += log
-			http_response += "\n"
+			if(log == ""):
+				print("204 NO CONTENT")
+				http_response = "HTTP\/1.1 204 NO CONTENT\n\n"
+				
+			else:
+				print("200 OK")
+				http_response = "HTTP\/1.1 200 OK\n\n"
+				http_response += log
+				http_response += "\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
 
@@ -128,21 +141,31 @@ while True:
 			http_response = "HTTP\/1.1 200 OK\n\n"
 			client_connection.sendall(http_response.encode())
 			client_connection.close()
+
 		elif(dir[0: 6] == "/state"):
 			received_state = dir.split("=")[1]
 			print(received_state)
 			if((received_state == "on") or (received_state == "off") or (received_state == "reboot")):
 				if(received_state == "on"):
-					gpio.on()
+					if(NOGPIOMODE):
+						print("GPIO ON")
+					else:
+						gpio.on()
 				elif (received_state == "off"):
-					gpio.off()
+					if(NOGPIOMODE):
+						print("GPIO OFF")
+					else:
+						gpio.off()
 				else:
 					try:
 						t = int(dir.split("=")[2])
 					except:
 						print("No timeout given, setting to 3")
 						t = 3
-					gpio.reboot(t)
+					if(NOGPIOMODE):
+						print("GPIO REBOOT")
+					else:
+						gpio.reboot(t)
 				modem_state = received_state
 				print("200 OK")
 
