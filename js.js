@@ -4,21 +4,19 @@ var switchOnButton = document.getElementById("on");
 var switchOffButton = document.getElementById("off");
 var rebootButton = document.getElementById("reboot");
 var timeout;
-var host = "localhost"
+var host = document.location.href.split("http://")[1].split(":")[0]
+console.log(host)
 
 changeFavicon = function(dir){
 	document.head = document.head || document.getElementsByTagName('head')[0];
-	console.log(document.head)
 	var link = document.createElement('link'), oldLink = document.getElementById('favicon');
  	link.id = 'favicon';
  	link.rel = 'shortcut icon';
  	link.type = "image/png";
  	link.href = dir;
  	if (oldLink) {
- 		console.log(oldLink)
   		document.head.removeChild(oldLink);
  	}
- 	console.log(link)
  	document.head.appendChild(link);
 }
 
@@ -69,7 +67,7 @@ update = function(){
 print = function(str){
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.open( "POST", "http://" + host + ":8888/log&log=" + str, false ); // false for synchronous request
-	xmlHttp.send( null );
+	xmlHttp.send();
 	termText = termText + str;
 	update();
 }
@@ -129,6 +127,7 @@ reboot = function(){
 	}
 }
 
+
 boot = function(){
 	var xmlHttp = new XMLHttpRequest();
     xmlHttp.open( "GET", "http://" + host + ":8888/log", false ); // false for synchronous request
@@ -139,7 +138,6 @@ boot = function(){
 	document.getElementById("off").onclick = off;
 	document.getElementById("reboot").onclick = reboot;
 	document.getElementById("ping").onclick = ping;
-	document.getElementById("autoreboot").onclick = autoreboot;
 	update();
 	detect();
 }
@@ -149,8 +147,7 @@ detect = function(){
     xmlHttp.open( "GET", "http://" + host + ":8888/ping", false );
 	xmlHttp.send( null );
 	avgPing = parseInt(xmlHttp.responseText)
-	console.log(avgPing)
-	if (avgPing > 0){
+	if (avgPing >= 0){
 		modemState = "on";
 		stateSetter("on");
 		on();
@@ -176,3 +173,4 @@ ping = function(){
     		stateSetter("on");
     	}
 }
+
