@@ -187,6 +187,7 @@ while True:
 								gpio.reboot(t)
 							except:
 								print("No reboot time given. 3 seconds of stop.")
+								t = 3
 								gpio.reboot(t)
 
 					modem_state = received_state
