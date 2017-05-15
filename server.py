@@ -95,13 +95,19 @@ while True:
 				print("200 OK")
 				http_response = "HTTP\/1.1 200 OK\n\n"
 				delay = ping.verbose_ping("192.168.0.1", 1000, 4)
-				# print(delay)
 				# only for testing
 				# delay = ping.verbose_ping("localhost", 250, 2)
 				http_response += str(int(delay))
-				
-				# http_response += "500ms"
-				# client_connection.sendall(http_response.encode())
+				client_connection.sendall(http_response.encode())
+				client_connection.close()
+
+			elif(dir == "/shortping"):
+				print("200 OK")
+				http_response = "HTTP\/1.1 200 OK\n\n"
+				delay = ping.verbose_ping("192.168.0.1", 500, 1)
+				# only for testing
+				# delay = ping.verbose_ping("localhost", 250, 2)
+				http_response += str(int(delay))
 				client_connection.sendall(http_response.encode())
 				client_connection.close()
 
@@ -141,8 +147,19 @@ while True:
 				client_connection.close()
 
 			elif(dir[0: 6] == "/state"):
-				received_state = dir.split("=")[1]
-				print(received_state)
+				print(dir)
+				try:
+					params = dir.split("&")[1:]
+				except:
+					print("NO PARAMS")
+					break
+				for param in params:
+					if(param.split("=")[0] == "state"):
+						received_state = param.split("=")[1]
+						print(received_state)
+					if(param.split("=")[0] == "t"):
+						t = param.split("=")[1]
+						print(t)
 				if((received_state == "on") or (received_state == "off") or (received_state == "reboot")):
 					if(received_state == "on"):
 						if(NOGPIOMODE):
@@ -157,16 +174,21 @@ while True:
 							print(NOGPIOMODE)
 							gpio.off()
 					else:
-						try:
-							t = int(dir.split("=")[2])
-						except:
-							print("No timeout given, setting to 3")
-							t = 3
 						if(NOGPIOMODE):
 							print("GPIO REBOOT")
+							try:
+								print("Time : ", t)
+							except:
+								t = 3
+								print("Default Time : ", t)
+							print("MODEM ON AGAIN.")
 						if(not NOGPIOMODE):
-							print(NOGPIOMODE)
-							gpio.reboot(t)
+							try:
+								gpio.reboot(t)
+							except:
+								print("No reboot time given. 3 seconds of stop.")
+								gpio.reboot(t)
+
 					modem_state = received_state
 					print("200 OK")
 

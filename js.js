@@ -5,6 +5,10 @@ var switchOffButton = document.getElementById("off");
 var rebootButton = document.getElementById("reboot");
 var timeout;
 var host = document.location.href.split("http://")[1].split(":")[0]
+if(host === "localhost"){
+	print("Running in localhost")
+	host = "127.0.0.1"
+}
 console.log(host)
 
 changeFavicon = function(dir){
@@ -139,12 +143,29 @@ boot = function(){
 	document.getElementById("reboot").onclick = reboot;
 	document.getElementById("ping").onclick = ping;
 	update();
-	detect();
+	// adapt();
+	shortping();
 }
 
-detect = function(){
+adapt = function(){
 	var xmlHttp = new XMLHttpRequest();
     xmlHttp.open( "GET", "http://" + host + ":8888/ping", false );
+	xmlHttp.send( null );
+	avgPing = parseInt(xmlHttp.responseText)
+	if (avgPing >= 0){
+		modemState = "on";
+		stateSetter("on");
+		on();
+	} else {
+		modemState = "off";
+		stateSetter("off");
+		off();
+	}
+}
+
+shortping = function(){
+	var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", "http://" + host + ":8888/shortping", false );
 	xmlHttp.send( null );
 	avgPing = parseInt(xmlHttp.responseText)
 	if (avgPing >= 0){

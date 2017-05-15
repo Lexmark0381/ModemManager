@@ -18,7 +18,9 @@ def reboot(t):
 	except:
 		print(t + " is not a valid timeout")
 		return -1
+	print("GPIO : OFF")
 	GPIO.output(18, 1)
 	time.sleep(t)
+	print("GPIO : ON")
 	GPIO.output(18, 0)
 	return 0
