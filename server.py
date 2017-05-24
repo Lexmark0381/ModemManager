@@ -1,4 +1,4 @@
-import socket, ping as ping, sys, time
+import socket, ping as ping, sys, time, os
 logfile =  "log/" + time.strftime("%d-%m-%Y") + ".log"
 NOGPIOMODE = False
 NOLOGMODE = False
@@ -26,6 +26,9 @@ if("--nolog" in sys.argv):
 	print("NO LOG MODE")
 	NOLOGMODE = True
 
+if(not(os.path.exists('log'))):
+	os.makedirs('log')
+	print("LOG DIRECTORY CREATED")
 
 
 
@@ -218,7 +221,7 @@ while True:
 					client_connection.close()
 
 				else:
-					
+
 					log("400 : " + method, dir)
 					print("400 BAD REQUEST")
 					http_response = "HTTP\/1.1 400 BadRequest\n\n"
