@@ -1,4 +1,4 @@
-import socket, ping as ping, sys, time, os
+import socket, ping as ping, sys, time, os, signal
 logfile =  "log/" + time.strftime("%d-%m-%Y") + ".log"
 NOGPIOMODE = False
 NOLOGMODE = False
@@ -6,7 +6,7 @@ modem_state = "on"
 log = ""
 HOST, PORT = '', 8888
 
-def log(S):
+def logToFile(S):
 	open(logfile, 'a').close()
 	separator = "--------------------------------------------------\n"
 	f = open(logfile, 'a')
@@ -15,6 +15,12 @@ def log(S):
 	f.write('\n')
 	f.close()
 
+def help():
+	print("--nogpio : run server without using gpio (prints GPIO ON or GPIO OFF)")
+	print("--nolog : run server without logging")
+	sys.exit()
+if("--help" in sys.argv):
+	help()
 if("--nogpio" in sys.argv):
 	print("NO GPIO MODE")
 	NOGPIOMODE = True
@@ -50,12 +56,12 @@ while True:
 			dir = request[0].split()[1]
 		except IndexError:
 			if(not(NOLOGMODE)):
-				log("UNHANDLED REQUEST: " + request)
+				logToFile("UNHANDLED REQUEST : " + request)
 			print("Couldn't retreive method or directory")
 			break;
 
 		print(method, dir)
-		log(method, dir)
+		logToFile("INCOMING REQUEST : \n\tMETHOD : " +method+ "\n\tDIRECTORY : " +dir)
 
 		if(method == "GET"):
 			if(dir == "/"):
@@ -222,13 +228,13 @@ while True:
 
 				else:
 
-					log("400 : " + method, dir)
+					logToFile("400 : \n\tMETHOD : " + method + "\n\tDIRECTORY: " + dir)
 					print("400 BAD REQUEST")
 					http_response = "HTTP\/1.1 400 BadRequest\n\n"
 					client_connection.sendall(http_response.encode())
 					client_connection.close()
 			else:
-				log("404 : " + method, dir)
+				logToFile("404 : \n\tMETHOD : " + method+ "\n\tDIRECTORY : " + dir)
 				print("404 NOT FOUND")
 				http_response = "HTTP\/1.1 404 NotFound\n\n"
 				client_connection.sendall(http_response.encode())
