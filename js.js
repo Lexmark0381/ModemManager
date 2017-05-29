@@ -44,7 +44,7 @@ stateSetter = function(str){
 		}
 		if (str === "reboot"){
 			changeFavicon("/img/grey.png")
-			createCountdown(30);
+			createCountdown(60);
 			return;
 		}
 	}
@@ -142,6 +142,7 @@ boot = function(){
 	document.getElementById("off").onclick = off;
 	document.getElementById("reboot").onclick = reboot;
 	document.getElementById("ping").onclick = ping;
+	document.getElementById("timer").onclick = timerHandler;
 	update();
 	// adapt();
 	shortping();
@@ -195,3 +196,8 @@ ping = function(){
     	}
 }
 
+
+timerHandler = function(){
+	timer = document.getElementById("timer")
+	
+}
