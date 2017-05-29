@@ -9,7 +9,7 @@ if(host === "localhost"){
 	print("Running in localhost")
 	host = "127.0.0.1"
 }
-console.log(host)
+// console.log(host)
 
 changeFavicon = function(dir){
 	document.head = document.head || document.getElementsByTagName('head')[0];
@@ -142,9 +142,7 @@ boot = function(){
 	document.getElementById("off").onclick = off;
 	document.getElementById("reboot").onclick = reboot;
 	document.getElementById("ping").onclick = ping;
-	document.getElementById("timer").onclick = timerHandler;
 	update();
-	// adapt();
 	shortping();
 }
 
@@ -197,7 +195,3 @@ ping = function(){
 }
 
 
-timerHandler = function(){
-	timer = document.getElementById("timer")
-	
-}
