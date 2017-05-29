@@ -1,0 +1,29 @@
+ body {
+  font-size: 80%;
+  padding: 20px;
+}
+
+main {
+	font-family: monospace;
+	background: white;
+	width: 100%;
+	margin: 0 auto;
+	padding: 20px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: auto;
+}
+
+main div {
+  background: white;
+  color: black;
+  font-size:250px;
+  padding: 20px;
+  overflow: auto;
+}
+main div p{
+  font-size: 20px;
+  width: 100%;
+  text-align: center;
+}

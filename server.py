@@ -1,5 +1,5 @@
 import socket, ping as ping, sys, time, os, signal
-logfile =  "log/" + time.strftime("%d-%m-%Y") + ".log"
+outlogfile =  "log/" + time.strftime("%d-%m-%Y") + ".out"
 NOGPIOMODE = False
 NOLOGMODE = False
 modem_state = "on"
@@ -7,9 +7,9 @@ log = ""
 HOST, PORT = '', 8888
 
 def logToFile(S):
-	open(logfile, 'a').close()
+	open(outlogfile, 'a').close()
 	separator = "--------------------------------------------------\n"
-	f = open(logfile, 'a')
+	f = open(outlogfile, 'a')
 	f.write(separator)
 	f.write(S)
 	f.write('\n')
@@ -19,8 +19,10 @@ def help():
 	print("--nogpio : run server without using gpio (prints GPIO ON or GPIO OFF)")
 	print("--nolog : run server without logging")
 	sys.exit()
+
 if("--help" in sys.argv):
 	help()
+
 if("--nogpio" in sys.argv):
 	print("NO GPIO MODE")
 	NOGPIOMODE = True
@@ -50,13 +52,12 @@ while True:
 		client_connection, client_address = listen_socket.accept()
 		request = client_connection.recv(1024).decode("utf-8") 
 		request = request.split('\r\n')
-
 		try:
 			method = request[0].split()[0]
 			dir = request[0].split()[1]
 		except IndexError:
 			if(not(NOLOGMODE)):
-				logToFile("UNHANDLED REQUEST : " + request)
+				logToFile("UNHANDLED REQUEST : " + str(request) + "\n\t" + str(client_address))
 			print("Couldn't retreive method or directory")
 			break;
 
@@ -123,6 +124,20 @@ while True:
 				client_connection.sendall(http_response.encode())
 				client_connection.close()
 
+			elif(dir == "/404.css"):
+				print("200 OK")
+				http_response = "HTTP\/1.1 200 OK\nContent-Type : text/css\n\n"
+				f = open("404.css", "r")
+				text = f.read()
+				f.close()
+				http_response += text
+				http_response += "\n"
+				client_connection.sendall(http_response.encode())
+				client_connection.close()
+
+				
+
+
 			elif(dir == "/ping"):
 				print("200 OK")
 				http_response = "HTTP\/1.1 200 OK\n\n"
@@ -162,9 +177,14 @@ while True:
 				client_connection.sendall(http_response.encode())
 				client_connection.close()
 			else:
+				logToFile("404 : \n\tMETHOD : " + method+ "\n\tDIRECTORY : " + dir)
 				print("404 NOT FOUND")
-				http_response = "HTTP\/1.1 404 NotFound\n\n"
+				http_response = "HTTP\/1.1 200 OK\n"
+				http_response += "Content-Type : text/html\n\n"
+				f = open('404.html', 'r')
+				http_response += f.read() + '\n'
 				client_connection.sendall(http_response.encode())
+				f.close()
 				client_connection.close()
 
 		elif(method == "POST"):
@@ -219,15 +239,12 @@ while True:
 								print("No reboot time given. 3 seconds of stop.")
 								t = 3
 								gpio.reboot(t)
-
 					modem_state = received_state
 					print("200 OK")
 					http_response = "HTTP\/1.1 200 OK\n\n"
 					client_connection.sendall(http_response.encode())
 					client_connection.close()
-
 				else:
-
 					logToFile("400 : \n\tMETHOD : " + method + "\n\tDIRECTORY: " + dir)
 					print("400 BAD REQUEST")
 					http_response = "HTTP\/1.1 400 BadRequest\n\n"
@@ -236,7 +253,11 @@ while True:
 			else:
 				logToFile("404 : \n\tMETHOD : " + method+ "\n\tDIRECTORY : " + dir)
 				print("404 NOT FOUND")
-				http_response = "HTTP\/1.1 404 NotFound\n\n"
+				http_response = "HTTP\/1.1 200 OK\n"
+				http_response += "Content-Type : text/html\n\n"
+				f = open('404.html', 'r')
+				http_response += f.read() + '\n'
 				client_connection.sendall(http_response.encode())
+				f.close()
 				client_connection.close()
 
