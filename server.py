@@ -211,6 +211,7 @@ while True:
 						t = param.split("=")[1]
 						print(t)
 				if((received_state == "on") or (received_state == "off") or (received_state == "reboot")):
+					logToFile("STATE REQUEST:\n\tHOST : " + str(client_address) + "\n\tSTATE : " + received_state)
 					if(received_state == "on"):
 						if(NOGPIOMODE):
 							print("GPIO ON")
@@ -231,7 +232,7 @@ while True:
 							except:
 								t = 3
 								print("Default Time : ", t)
-							print("MODEM ON AGAIN.")
+							print("MODEM ON AGAIN AFTER " + str(t) + " second(s).")
 						if(not NOGPIOMODE):
 							try:
 								gpio.reboot(t)
